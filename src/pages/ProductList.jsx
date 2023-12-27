@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from "react";
 import ProductService from "../services/productService";
 import { Icon, Menu, Table } from "semantic-ui-react";
+import { Link} from "react-router-dom";
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);
-
+ 
   useEffect(() => {
-    let productService = new ProductService();
-    productService
-      .getProducts()
-      .then()
-      .catch((result) => setProducts(result.data.data));
-  });
+    const fetchData = async () => {
+      try {
+        let productService = new ProductService();
+        const response = await productService.getProducts();
+
+        setProducts(response.data.products);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <>
@@ -27,20 +35,28 @@ export default function ProductList() {
         </Table.Header>
 
         <Table.Body>
-          {products.map((product) => (
-            <Table.Row key={product.id}>
-              <Table.Cell>{product.productName}</Table.Cell>
-              <Table.Cell>{product.UnitPrice}</Table.Cell>
-              <Table.Cell>{product.UnitsInStock}</Table.Cell>
-              <Table.Cell>{product.quantitPerUnit}</Table.Cell>
-              <Table.Cell>{product.Category.categoryName}</Table.Cell>
+          {products && products.length > 0 ? (
+            products.map((product) => (
+              <Table.Row key={product.id}>
+                <Table.Cell>
+                  <Link to={`/products/${product.id}`}>{product.title}</Link>
+                </Table.Cell>
+                <Table.Cell>{product.price}</Table.Cell>
+                <Table.Cell>{product.stock}</Table.Cell>
+                <Table.Cell>{product.description}</Table.Cell>
+                <Table.Cell>{product.category}</Table.Cell>
+              </Table.Row>
+            ))
+          ) : (
+            <Table.Row>
+              <Table.Cell colSpan="5">Loading...</Table.Cell>
             </Table.Row>
-          ))}
+          )}
         </Table.Body>
 
         <Table.Footer>
           <Table.Row>
-            <Table.HeaderCell colSpan="3">
+            <Table.HeaderCell colSpan="5">
               <Menu floated="right" pagination>
                 <Menu.Item as="a" icon>
                   <Icon name="chevron left" />
